@@ -1,18 +1,43 @@
-PHP-PDO-MySQL-Class
+PHP-PDO-MySQL-Class [![Build Status](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class.svg?branch=develop)](https://travis-ci.org/lincanbin/PHP-PDO-MySQL-Class)
 ===================
 
-A  PHP MySQL PDO class similar to the the Python MySQLdb.
+A PHP MySQL PDO class similar to the the Python MySQLdb, 
+which supports iterator and parameter binding when using "WHERE IN" statement.
+
+* [Install](#install)
+
+* [Initialize](#initialize)
+
+* [Preventing SQL Injection Attacks](#preventing-sql-injection-attacks)
+
+* [Basic Usage](#basic-usage)
+
+* [Transaction](#transaction)
+
+* [Iterator](#iterator)
+
+
+Install
+------------
+Copy the files under `src/` to your program
+ 
+OR
+
+```
+composer require lincanbin/php-pdo-mysql-class
+```
 
 Initialize
 ------------
 ```php
 <?php
 define('DBHost', '127.0.0.1');
+define('DBPort', 3306);
 define('DBName', 'Database');
 define('DBUser', 'root');
 define('DBPassword', '');
-require(dirname(__FILE__)."/src/PDO.class.php");
-$DB = new Db(DBHost, DBName, DBUser, DBPassword);
+require(__DIR__ . "/src/PDO.class.php");
+$DB = new Db(DBHost, DBPort, DBName, DBUser, DBPassword);
 ?>
 ```
 
@@ -34,7 +59,7 @@ Unsafety Example:
 $DB->query("SELECT * FROM fruit WHERE name=".$_GET['name']);
 ?>
 ```
-Usage
+Basic Usage
 ------------
 
 #### table "fruit"
@@ -109,7 +134,7 @@ $params = array(
 		"banana"
 	)
 );
-$DB->query($query,$params);
+$DB->query($query, $params);
 ?>
 ```
 
@@ -215,6 +240,55 @@ $DB->querycount;
 
 ```php
 <?php
-$DB->CloseConnection;
+$DB->closeConnection();
 ?>
+```
+
+Transaction
+------------
+```php
+<?php
+try {
+    $DB->beginTransaction();
+    var_dump($DB->inTransaction()); // print "true"
+    $DB->commit();
+} catch(Exception $ex) {
+    // handle Error
+    $DB->rollBack();
+}
+?>
+```
+
+Iterator
+------------
+
+**Use iterator** when you want to read thousands of data from the database for statistical or full update of Elastic Search or Solr indexes.
+
+[Iterator](https://secure.php.net/manual/en/class.iterator.php) is a traversable object that does not read all the data queried from MySQL into memory.
+
+So you can safely use `foreach` to handle millions of MySQL result sets without worrying about excessive memory usage.
+
+Example:
+
+```php
+$iteratorInstance = $DB->iterator("SELECT * FROM fruit limit 0, 1000000;");
+$colorCountMap = array(
+    'red' => 0,
+    'yellow' => 0,
+    'green' => 0
+);
+foreach($iteratorInstance as $key => $value) {
+    sendDataToElasticSearch($key, $value);
+    $colorCountMap[$value['color']]++;
+}
+var_export($colorCountMap);
+```
+Return:
+
+```php
+array(3) {
+  [red] => 2
+  [yellow] => 2
+  [green] => 1
+}
 ```

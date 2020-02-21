@@ -3,10 +3,11 @@
     "keywords": [
         "pdo",
         "mysql",
-        "database"
+        "database",
+        "iterator"
     ],
-    "description": "A PHP MySQL PDO class similar to the the Python MySQLdb, which supports parameter binding when using 'WHERE IN' statement.",
-    "license": "Apache License Version 2.0",
+    "description": "A PHP MySQL PDO class similar to the the Python MySQLdb, which supports iterator and parameter binding when using 'WHERE IN' statement.",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "lincanbin",
@@ -14,11 +15,12 @@
         }
     ],
     "require": {
-        "php": ">=5.3.6"
+        "php": ">=5.3.6",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*"
     },
     "autoload": {
         "files": [
-            "src/PDO.Log.class.php",
             "src/PDO.class.php"
         ]
     }
